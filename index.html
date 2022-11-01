@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>COVID 19 DataPlatform</title>
+</head>
+<body>
+   <h1>Welcome !!</h1>
+
+   <p>ls. Please enter the directory you want to examine in the input box below</p>
+
+    <form id="ls_form">
+      <label>directory<input type="text" /></label>
+      <br /><br />
+      <button type="submit">Submit form</button>
+    </form>
+
+    <script>
+        function ls_helper(event) {
+            event.preventDefault()
+           var dir = event.currentTarget.elements[0].value;
+           const url = '/ls/' + dir;
+             fetch(url)
+              .then(res => res.json()).
+               then(data => alert(data)).
+               catch(error => alert(error));
+        }
+        var form = document.getElementById('ls_form');
+        form.addEventListener('submit', ls_helper);
+    </script>
+
+
+    <p>mkdir. Please enter the directory you want to make in the input box below</p>
+
+    <form id="mkdir_form">
+      <label>directory<input type="text" /></label>
+      <br /><br />
+      <button type="submit">Submit form</button>
+    </form>
+
+    <script>
+        function mkdir_helper(event) {
+            event.preventDefault()
+           var dir = event.currentTarget.elements[0].value;
+           const url = '/mkdir/' + dir;
+             fetch(url)
+              .then(res => res.text()).
+               then(data => alert(data)).
+               catch(error => alert(error));
+        }
+        form = document.getElementById('mkdir_form');
+        form.addEventListener('submit', mkdir_helper);
+    </script>
+
+
+  <p>cat. Please enter the file you want to read in the input box below</p>
+
+    <form id="cat_form">
+      <label>file<input type="text" /></label>
+      <br /><br />
+      <button type="submit">Submit form</button>
+    </form>
+
+    <script>
+        function cat_helper(event) {
+            event.preventDefault()
+           var file = event.currentTarget.elements[0].value;
+           const url = '/cat/' + file;
+             fetch(url)
+              .then(res => res.json()).
+               then(data => alert(JSON.stringify(data))).
+               catch(error => alert(error));
+        }
+        form = document.getElementById('cat_form');
+        form.addEventListener('submit', cat_helper);
+    </script>
+
+</body>
+<html>
