@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>COVID 19 DataPlatform</title>
+    <link rel="stylesheet" type="text/css" href="application.css">
+    <link rel="shortcut icon" href="data:image/x-icon;," type="image/x-icon">
+<body>
+    <div id="contain">
+        <div id="head">
+            <h1>Welcome !!</h1>
+        </div>
+        <div id="in">
+            <form id="form" onsubmit="return false" method="GET">
+                <div id="commands">
+                    <div id="inputboxes">
+                        <label for="op">Operation:</label>
+                        <select name="opselect" id="op" onchange="GetOperation()" required>
+                            <option value="" selected disabled>Select Operation</option>
+                            <option value="mkdir">mkdir</option>
+                            <option value="ls">ls</option>
+                            <option value="cat">cat</option>
+                            <option value="rm">rm</option>
+                            <option value="put">put</option>
+                            <option value="getPartitionLocations">getPartitionLocations</option>
+                            <option value="readPartition">readPartition</option>
+                        </select>
+                        <label id="filelabel" for="filepath">File Path:</label>
+                        <input type="text" name="file" id="filepath" required>
+                        <label id="direclabel" for="directory">Directory:</label>
+                        <input type="text" name="dir" id="directory" required>
+                        <label id="partlabel" for="partition">Partition:</label>
+                        <input type="text" name="part" id="partition" required>
+                    </div>
+                </div>
+                <div id="butt">
+                    <button type="submit" id="submitform" name="submitform" onclick="ShowResult()">
+                        <span class="txt">Submit</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+        <div id="res">
+            <span id="command"></span>
+            <span>
+                <pre id="result"></pre>
+            </span>
+        </div>
+    </div>
+    <script type="text/javascript" src="application.js"></script>
+</body>
+</html>

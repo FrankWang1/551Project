@@ -1,0 +1,105 @@
+#contain {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: flex-start;
+	max-width: 100%;
+	font-family: sans-serif;
+}
+
+#head {
+	display: flex;
+	flex-direction: column;
+	position: relative;
+}
+
+#in {
+	display: flex;
+	flex-direction: column;
+	position: relative;
+}
+
+#commands {
+	display: flex;
+	flex-direction: column;
+	position: relative;
+}
+
+#space {
+	margin-bottom: 10px;
+}
+
+#inputboxes {
+	display: flex;
+	flex-direction: column;
+	position: relative;
+}
+
+#form {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	position: relative;
+}
+
+label {
+	color: #506cb4;
+	font-size: 90%;
+}
+
+#butt {
+	margin-top: 20px;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+}
+
+button {
+	display: flex;
+	width: 100px;
+	height: 30px;
+}
+
+#filelabel {
+	display: none;
+	margin-top: 10px;
+}
+
+#direclabel {
+	display: none;
+	margin-top: 10px;
+}
+
+#partlabel {
+	display: none;
+	margin-top: 10px;
+}
+
+#filepath {
+	display: none;
+}
+
+#directory {
+	display: none;
+}
+
+#partition {
+	display: none;
+}
+
+#submitform {
+	background-color: grey;
+	color: white;
+	text-align: center;
+	text-decoration: none;
+	display: inline-block;
+	font-size: 16px;
+	border-radius: 0;
+}
+
+#res {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	margin-top: 100px;
+}
