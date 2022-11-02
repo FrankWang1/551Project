@@ -1,4 +1,5 @@
 #contain {
+	margin-left: 100px;
 	display: flex;
 	flex-direction: column;
 	justify-content: center;
@@ -73,6 +74,10 @@ button {
 #partlabel {
 	display: none;
 	margin-top: 10px;
+}
+
+#filepathAfilepath {
+	display: none;
 }
 
 #filepath {

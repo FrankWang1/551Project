@@ -2,7 +2,43 @@ window.onload = function() {
     document.getElementById("form").reset();
 }
 
-async function ShowResult() {
+async function fetchAndPrint(url, source){
+    let response = await fetch(url);
+    let json = await response.json();
+    let command = json.comb.command;
+    let result = json.comb.result;
+
+    if(source === 1){
+        document.getElementById("commandA").innerHTML = "$ " + command;
+        document.getElementById("resultA").innerHTML = JSON.stringify(result, null, 2);
+    }
+
+    if(source === 0){
+        document.getElementById("command").innerHTML = "$ " + command;
+        if (result != null) {
+            if (document.getElementById("op").value === "cat" || document.getElementById("op").value === "readPartition") {
+                document.getElementById("result").innerHTML = JSON.stringify(result, null, 2);
+            }
+            else {
+                let out = "";
+                for (let i = 0; i < result.length; i++) {
+                    out += result[i] + "\n";
+                }
+                document.getElementById("result").innerHTML = out;
+            }
+        }
+    }
+}
+
+function ShowAnalyticsResult(){
+    file = document.getElementById("filepathA").value;
+    para = document.getElementById("parameter").value;
+    type = document.getElementById("opA").value;
+    url = "/operations/analytics?" + "file=" + file + "&para=" + para + "&type=" + type;
+    fetchAndPrint(url, 1)
+}
+
+function ShowResult() {
     let url = "";
     let file = "";
     let dir = ""
@@ -38,23 +74,7 @@ async function ShowResult() {
         part = document.getElementById("partition").value;
         url = "/operations/readpart?" + "file=" + file + "&part=" + part;
     }
-    let response = await fetch(url);
-    let json = await response.json();
-    let command = json.comb.command;
-    let result = json.comb.result;
-    document.getElementById("command").innerHTML = "$ " + command;
-    if (result != null) {
-        if (document.getElementById("op").value === "cat" || document.getElementById("op").value === "readPartition") {
-            document.getElementById("result").innerHTML = JSON.stringify(result, null, 2);
-        }
-        else {
-            let out = "";
-            for (let i = 0; i < result.length; i++) {
-                out += result[i] + " ";
-            }
-            document.getElementById("result").innerHTML = out;
-        }
-    }
+    fetchAndPrint(url, 0)
 }
 
 function GetOperation() {
