@@ -155,6 +155,17 @@ def getPartitionLocations():
         return jsonify(comb=comb)
     return application.send_static_file("application.html")
 
+def getPartitionLocations(file):
+    file = '/' + file
+    index = file.rfind("/")
+    fileName = file[index + 1:-4]
+    response = requests.get(url=metaURL + "/" + fileName + json_suffix)
+    print(metaURL + "/" + fileName + json_suffix)
+    data = json.loads(response.text)
+    index = []
+    for _, val in enumerate(data):
+        index.append(val)
+    return index
 
 @application.route('/operations/readpart', methods=['GET'])
 def readPartition():
@@ -165,7 +176,6 @@ def readPartition():
         file = '/' + file
         index = file.rfind("/")
         fileName = file[index + 1:-4]
-        print(baseURL + str(partition) + "/" + fileName + json_suffix)
         response = requests.get(url=baseURL + str(partition) + "/" + fileName + json_suffix)
         data = json.loads(response.text)
         # print(data)
@@ -176,14 +186,34 @@ def readPartition():
         return jsonify(comb=comb)
     return application.send_static_file("application.html")
 
+def readPartition(file, partition):
+    file = '/' + file
+    index = file.rfind("/")
+    fileName = file[index + 1:-4]
+    print(baseURL + str(partition) + "/" + fileName + json_suffix)
+    response = requests.get(url=baseURL + str(partition) + "/" + fileName + json_suffix)
+    data = json.loads(response.text)
+    return data
 
-@application.route('/queries', methods=['GET'])
-def analytics(file, parameter, type):
-    index = getPartitionLocations(file)
-    res = []
-    for i in index:
-        res.append(get_partition_analytics(file, i, parameter, type))
-    return analytics_reduce(parameter, res, type)
+@application.route('/operations/analytics', methods=['GET'])
+def analytics():
+    if request.method == "GET":
+        user_input = request.args
+        file = user_input.get("file")
+        parameter = user_input.get("para")
+        type = user_input.get("type")
+        index = getPartitionLocations(file)
+        res = []
+        for i in index:
+            res.append(get_partition_analytics(file, i, parameter, type))
+        res = analytics_reduce(parameter, res, type)
+        comb = {
+            "command": "Analytics: In the file [" + file + "], we want to get [" + type + "] of [" + parameter + "]",
+            "result": res
+        }
+        return jsonify(comb=comb)
+    return application.send_static_file("application.html")
+
 
 
 def get_partition_analytics(file, partition, parameter, type):
