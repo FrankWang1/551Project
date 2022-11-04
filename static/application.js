@@ -18,8 +18,8 @@ async function fetchAndPrint(url, source){
         document.getElementById("resultA").innerHTML = JSON.stringify(result, null, 2);
     }
 
-    if (source == 0 || source == 3){
-        document.getElementById(source == 0 ? "command" : "commandS").innerHTML = "$ " + command;
+    if (source === 0 || source === 3){
+        document.getElementById(source === 0 ? "command" : "commandS").innerHTML = "$ " + command;
         if (result != null) {
             if (document.getElementById("op").value === "cat" || document.getElementById("op").value === "readPartition") {
                 document.getElementById("result").innerHTML = JSON.stringify(result, null, 2);
@@ -29,7 +29,7 @@ async function fetchAndPrint(url, source){
                 for (let i = 0; i < result.length; i++) {
                     out += result[i] + "\n";
                 }
-                document.getElementById(source == 0 ? "result" : "resultS").innerHTML = out;
+                document.getElementById(source === 0 ? "result" : "resultS").innerHTML = out;
             }
         }
     } else {
@@ -49,7 +49,7 @@ async function navigateDir(path) {
 
 async function navigateBack() {
     base = base.substring(0, base.lastIndexOf('/'));
-    base += base.length == 0 ? "/" : "";
+    base += base.length === 0 ? "/" : "";
     await fetchAndPrint(lsurl + base, 2);
 }
 
