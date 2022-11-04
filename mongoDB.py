@@ -265,7 +265,7 @@ def analyticsByPartition(file, parameter, aType, partition):
         for i in array:
             sum += int(i.get(parameter))
             count += 1
-        return [sum, count]
+        return [sum/count, count]
 
     if aType == 'SD':
         sd_array = []
