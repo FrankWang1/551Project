@@ -7,6 +7,12 @@
     <link rel="stylesheet" type="text/css" href="application.css">
     <link rel="shortcut icon" href="data:image/x-icon;," type="image/x-icon">
 <body>
+
+<div>
+    <h3>Directory Navigation (tested for Mongo)</h3>
+    <div id="dir_map"></div>
+</div>
+
     <div id="contain">
         <div id="head">
             <h1>7 Commands (Only tested for MongoDB and firebase)</h1>
@@ -49,6 +55,50 @@
             </span>
         </div>
     </div>
+
+<div id="contain">
+    <h3>Search &#129488</h3>
+    <div id="in">
+        <form id="in" onsubmit="return false" method="GET">
+            <div id="commands">
+                <div id="inputboxes">
+                    <label for="opA">Operation:</label>
+                    <select name="opselect" id="opS" onchange="GetSOperation()" required>
+                        <option value="" selected disabled>Select Operation</option>
+                        <option value="Equality">Equality</option>
+                        <option value="Range">Range Query</option>
+                    </select>
+                    <label id="filelabelS">File Path:</label>
+                    <input type="text" name="file" id="filepathS" required>
+                    <label id="paramlabelS">Parameter:</label>
+                    <input type="text" name="param" id="parameterS" required>
+                    <div id="eqIn" style="display: none">
+                        <label id="equalityLabel">Equal to:</label>
+                        <input type="text" name="param" id="eqVal" required>
+                    </div>
+                    <div id="rangeIn" style="display: none">
+                        <label id="lbLabel">Lower bound:</label>
+                        <input type="text" name="param" id="lbVal" required>
+                        <label id="ubLabel">Lower bound:</label>
+                        <input type="text" name="param" id="ubVal" required>
+                    </div>
+                </div>
+            </div>
+            <div id="butt">
+                <button type="submit" id="submitform" name="submitform" onclick="ShowSearchResult()">
+                    <span class="txt">Submit</span>
+                </button>
+            </div>
+        </form>
+    </div>
+    <div id="res">
+        <h2>Result:</h2>
+        <span id="commandS"></span>
+        <span>
+                <pre id="resultS"></pre>
+            </span>
+    </div>
+</div>
 
     <div id="contain">
         <div id="head">
