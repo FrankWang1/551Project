@@ -46,6 +46,12 @@ def ls():
         user_input = request.args
         path = user_input.get("dir")
         res = []
+        if path == '/':
+            for name in name_node.list_collection_names():
+                res.append(name[1:])
+            print(res)
+            comb = {"command": "ls " + path,"result": res}
+            return jsonify(comb=comb)
         if not name_node[path].find_one():
             print('ls failed: no such directory.')
             res.append("ls failed: no such directory.")
@@ -292,6 +298,26 @@ def analyticsByPartition(file, parameter, aType, partition):
             count_array.append(i.get(parameter))
         return count_array
 
+
+@application.route('/operations/search', methods=['GET'])
+def search():
+    path, field, lb, ub = request.args.get("file"), request.args.get("para"), request.args.get("lb"), request.args.get("ub")
+    ub = None if ub == "null" else ub
+    file = splitFilename(path)
+    res = []
+    if not file:
+        comb = {"command": "Failed: file not exists.", "result": res}
+        return jsonify(comb=comb)
+    for loc in file['locs']:
+        for line in data_nodes[''.join(['block', str(loc['block'])])].find_one({'file': loc['file']})['data']:
+            val = json.loads(line)[field]
+            lb = int(lb) if type(val) == int else (float(lb) if type(val) == float else lb)
+            ub = None if not ub else (int(ub) if type(val) == int else (float(ub) if type(val) == float else ub))
+            if ub and val >= lb and val <= ub or not ub and val == lb:
+                res.append(line)
+    comb = {"command": "Records found:", "result": res}
+    print(comb)
+    return jsonify(comb=comb)
 
 @application.route('/operations/analytics', methods=['GET'])
 def analytics():
