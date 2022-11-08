@@ -16,8 +16,14 @@ db = mysql.connector.connect(**config)
 cursor = db.cursor()
 
 
+
+def init_1():
+    return application.send_static_file("application.html")
+
+
 @application.route('/')
 def init():
+
     cursor.execute("DROP TABLE IF EXISTS metadata")
     cursor.execute("DROP TABLE IF EXISTS structure")
     cursor.execute("DROP TABLE IF EXISTS division")
@@ -37,11 +43,13 @@ def init():
 
 @application.route('/operations/mkdir', methods=['GET'])
 def mkdir():
+
     if request.method == "GET":
         user_input = request.args
         path = user_input.get("dir")
         path = path.strip()
         directories = path.split('/')
+
         cursor.execute("SELECT child_id FROM structure WHERE parent_id is NULL")
         parent_id = cursor.fetchone()[0]
         for i in range(len(directories) - 1):
@@ -62,6 +70,10 @@ def mkdir():
         child_id = cursor.lastrowid
         cursor.execute("INSERT INTO structure (parent_id, child_id) VALUES ({}, {})".format(parent_id, child_id))
         db.commit()
+        comb = {
+            "command": "mkdir /" + path
+        }
+        return jsonify(comb=comb)
     return application.send_static_file("application.html")
 
 
@@ -71,6 +83,7 @@ def ls():
         user_input = request.args
         path = user_input.get("dir")
         path = path.strip()
+        res = []
         directories = path.split('/')
         cursor.execute("SELECT child_id FROM structure WHERE parent_id is NULL")
         parent_id = cursor.fetchone()[0]
@@ -83,7 +96,13 @@ def ls():
             child_id = cursor.fetchone()
             if child_id is None:
                 print("ls: cannot access '{}': No such file or directory".format(path))
-                return
+                res.append("ls failed: no such directory.")
+                comb = {
+                    "command": "ls " + path,
+                    "result": res
+                }
+                return jsonify(comb=comb)
+
             else:
                 child_id = child_id[0]
             parent_id = child_id
@@ -91,7 +110,13 @@ def ls():
                        "INNER JOIN (SELECT child_id FROM structure WHERE parent_id={}) as tb1 "
                        "ON metadata.file_id=tb1.child_id".format(parent_id))
         for cur in cursor:
+            res.append("/" + cur[0])
             print(cur[0], end="  ")
+        comb = {
+            "command": "ls " + path,
+            "result": res
+        }
+        return jsonify(comb=comb)
     return application.send_static_file("application.html")
 
 
@@ -104,7 +129,10 @@ def put():
         partitions = int(user_input.get("part"))
         if not os.path.exists(file):
             print("The file {} does not exist".format(file))
-            return
+            comb = {
+                "command": "put failed: no such directory."
+            }
+            return jsonify(comb=comb)
         path = path.strip()
         directories = path.split('/')
         cursor.execute("SELECT child_id FROM structure WHERE parent_id is NULL")
@@ -144,15 +172,20 @@ def put():
                 sql_insert = 'INSERT INTO division VALUES (%s, %s, %s)'
                 cursor.execute(sql_insert, (file_id, i + 1, partition))
         db.commit()
+        comb = {
+            "command": "put " + file + " " + path + " " + str(partitions)
+        }
+        return jsonify(comb=comb)
     return application.send_static_file("application.html")
 
 
 @application.route('/operations/cat', methods=['GET'])
-def cat(path):
+def cat():
     if request.method == "GET":
         user_input = request.args
         path = user_input.get("file")
         path = path.strip()
+        res = []
         directories = path.split('/')
         cursor.execute("SELECT child_id FROM structure WHERE parent_id is NULL")
         parent_id = cursor.fetchone()[0]
@@ -172,8 +205,57 @@ def cat(path):
         cursor.execute("SELECT content FROM division WHERE file_id={}".format(parent_id))
         out = ''
         for cur in cursor:
+            res.append(cur[0])
             out += cur[0]
         print(out)
+        comb = {
+            "command": "Command input: cat" + path,
+            "result": res
+        }
+        return jsonify(comb=comb)
+    return application.send_static_file("application.html")
+
+
+@application.route('/operations/getloc', methods=['GET'])
+def getPartitionLocations():
+    if request.method == "GET":
+        user_input = request.args
+        path = user_input.get("file")
+        path = path.strip()
+        res = []
+        directories = path.split('/')
+        fileName = directories[len(directories) - 1]
+        cursor.execute("SELECT child_id FROM structure WHERE parent_id is NULL")
+        parent_id = cursor.fetchone()[0]
+        for i in range(len(directories)):
+            if directories[i] == '':
+                continue
+            cursor.execute("SELECT child_id FROM (SELECT file_id FROM metadata WHERE name='{}') as tb1 "
+                           "INNER JOIN (SELECT child_id FROM structure WHERE parent_id={}) as tb2 "
+                           "ON tb1.file_id=tb2.child_id".format(directories[i], parent_id))
+            child_id = cursor.fetchone()
+            if child_id is None:
+                res.append("No such file or directory")
+                comb = {
+                    "command": "getPartitionLocations " + path,
+                    "result": res
+                }
+                print("mkdir: cannot create directory ‘{}’: No such file or directory".format(path))
+                return jsonify(comb=comb)
+            else:
+                child_id = child_id[0]
+            parent_id = child_id
+        print(parent_id)
+        cursor.execute("SELECT division FROM division WHERE file_id ={}".format(parent_id))
+
+        for i in cursor:
+            print(i[0])
+            res.append('block:' + str(i[0]) + '--filename:' + fileName)
+        comb = {
+            "command": "getPartitionLocations " + path,
+            "result": res
+        }
+        return jsonify(comb=comb)
     return application.send_static_file("application.html")
 
 
@@ -184,6 +266,7 @@ def readPartition():
         path = user_input.get("file")
         partition_number = int(user_input.get("part"))
         path = path.strip()
+        res = []
         directories = path.split('/')
         cursor.execute("SELECT child_id FROM structure WHERE parent_id is NULL")
         parent_id = cursor.fetchone()[0]
@@ -196,14 +279,25 @@ def readPartition():
             child_id = cursor.fetchone()
             if child_id is None:
                 print("readPartition: cannot access '{}': No such file or directory".format(path))
-                return
+                res.append("No such file or directory")
+                comb = {
+                    "command": "readPartition " + path + " " + str(partition_number),
+                    "result": res
+                }
+                return jsonify(comb=comb)
             else:
                 child_id = child_id[0]
             parent_id = child_id
         cursor.execute("SELECT content FROM division "
                        "WHERE file_id={} and division.division={}".format(parent_id, partition_number))
         for cur in cursor:
+            res.append(cur[0])
             print(cur[0])
+        comb = {
+            "command": "readPartition " + path + " " + str(partition_number),
+            "result": res
+        }
+        return jsonify(comb=comb)
     return application.send_static_file("application.html")
 
 
@@ -213,6 +307,7 @@ def rm():
         user_input = request.args
         path = user_input.get("file")
         path = path.strip()
+        res = []
         directories = path.split('/')
         cursor.execute("SELECT child_id FROM structure WHERE parent_id is NULL")
         parent_id = cursor.fetchone()[0]
@@ -224,8 +319,15 @@ def rm():
                            "ON tb1.file_id=tb2.child_id".format(directories[i], parent_id))
             child_id = cursor.fetchone()
             if child_id is None:
+
                 print("rm: cannot access '{}': No such file or directory".format(path))
-                return
+                res.append("No such file or directory")
+                comb = {
+                    "command": "rm " + path,
+                    "result": res
+
+                }
+                return jsonify(comb=comb)
             else:
                 child_id = child_id[0]
             parent_id = child_id
@@ -233,6 +335,10 @@ def rm():
         cursor.execute("DELETE FROM structure WHERE child_id={}".format(parent_id))
         cursor.execute("DELETE FROM division WHERE file_id={}".format(parent_id))
         db.commit()
+        comb = {
+            "command": "rm " + path
+        }
+        return jsonify(comb=comb)
     return application.send_static_file("application.html")
 
 
@@ -359,5 +465,4 @@ def reduce_partition(res, mode):
 
 
 if __name__ == '__main__':
-    res = analytics('Weather.csv', 'code', 'mode')
-    print(res)
+    application.run()
