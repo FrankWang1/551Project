@@ -155,6 +155,7 @@ def getPartitionLocations():
         return jsonify(comb=comb)
     return application.send_static_file("application.html")
 
+
 def getPartitionLocations(file):
     file = '/' + file
     index = file.rfind("/")
@@ -166,6 +167,7 @@ def getPartitionLocations(file):
     for _, val in enumerate(data):
         index.append(val)
     return index
+
 
 @application.route('/operations/readpart', methods=['GET'])
 def readPartition():
@@ -186,6 +188,7 @@ def readPartition():
         return jsonify(comb=comb)
     return application.send_static_file("application.html")
 
+
 def readPartition(file, partition):
     file = '/' + file
     index = file.rfind("/")
@@ -194,6 +197,46 @@ def readPartition(file, partition):
     response = requests.get(url=baseURL + str(partition) + "/" + fileName + json_suffix)
     data = json.loads(response.text)
     return data
+
+
+@application.route('/operations/search', methods=['GET'])
+def search():
+    if request.method == "GET":
+        path, field, lb, ub = request.args.get("file"), request.args.get("para"), request.args.get(
+            "lb"), request.args.get(
+            "ub")
+        ub = None if ub == "null" else ub
+        index = getPartitionLocations(path)
+        res = []
+        path = '/' + path
+        pos = path.rfind('/')
+        fileName = path[pos + 1:-4]
+        field = '\"' + field + '\"'
+        for i in index:
+            if ub is None:
+                url = baseURL + str(
+                    i) + '/' + fileName + json_suffix + '?orderBy=' + field + '&equalTo=' + str(lb)
+                response = requests.get(url)
+                data = json.loads(response.text)
+                for _, value in data.items():
+                    res.append(value)
+
+            else:
+                response = requests.get(
+                    url=baseURL + str(
+                        i) + '/' + fileName + json_suffix + '?orderBy=' + field + '&startAt=' + str(
+                        lb) + '&endAt=' + str(ub))
+                data = json.loads(response.text)
+                for _, value in data.items():
+                    res.append(value)
+        comb = {
+            "command": "Search: In the file [" + fileName + "]",
+            "result": res
+        }
+        print(res)
+        return jsonify(comb=comb)
+    return application.send_static_file("application.html")
+
 
 @application.route('/operations/analytics', methods=['GET'])
 def analytics():
@@ -213,7 +256,6 @@ def analytics():
         }
         return jsonify(comb=comb)
     return application.send_static_file("application.html")
-
 
 
 def get_partition_analytics(file, partition, parameter, type):
