@@ -27,7 +27,8 @@ async function fetchAndPrint(url, source){
             else {
                 let out = "";
                 for (let i = 0; i < result.length; i++) {
-                    out += result[i] + "\n";
+                    out += JSON.stringify(result[i]) + "\n";
+                    console.log(JSON.stringify(result[i]))
                 }
                 document.getElementById(source === 0 ? "result" : "resultS").innerHTML = out;
             }
