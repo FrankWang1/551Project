@@ -13,8 +13,7 @@ config = {
     'database': 'dsci551'
 }
 db = mysql.connector.connect(**config)
-cursor = db.cursor()
-
+cursor = db.cursor(buffered=True)
 
 
 def init_1():
@@ -23,7 +22,6 @@ def init_1():
 
 @application.route('/')
 def init():
-
     cursor.execute("DROP TABLE IF EXISTS metadata")
     cursor.execute("DROP TABLE IF EXISTS structure")
     cursor.execute("DROP TABLE IF EXISTS division")
@@ -32,9 +30,7 @@ def init():
     cursor.execute("CREATE TABLE structure (parent_id INT UNSIGNED, child_id INT UNSIGNED)")
     cursor.execute("CREATE TABLE division (file_id INT UNSIGNED, division INT UNSIGNED, content LONGTEXT)"
                    " ENGINE=InnoDB DEFAULT CHARSET=utf8")
-
     cursor.execute("INSERT INTO metadata (name, type) VALUES ('{}', '{}')".format('root', 'DIRECTORY'))
-
     root_id = cursor.lastrowid
     cursor.execute("INSERT INTO structure (parent_id, child_id) VALUES ({}, {})".format('NULL', root_id))
     db.commit()
@@ -43,13 +39,11 @@ def init():
 
 @application.route('/operations/mkdir', methods=['GET'])
 def mkdir():
-
     if request.method == "GET":
         user_input = request.args
         path = user_input.get("dir")
         path = path.strip()
         directories = path.split('/')
-
         cursor.execute("SELECT child_id FROM structure WHERE parent_id is NULL")
         parent_id = cursor.fetchone()[0]
         for i in range(len(directories) - 1):
@@ -102,7 +96,6 @@ def ls():
                     "result": res
                 }
                 return jsonify(comb=comb)
-
             else:
                 child_id = child_id[0]
             parent_id = child_id
@@ -247,7 +240,6 @@ def getPartitionLocations():
             parent_id = child_id
         print(parent_id)
         cursor.execute("SELECT division FROM division WHERE file_id ={}".format(parent_id))
-
         for i in cursor:
             print(i[0])
             res.append('block:' + str(i[0]) + '--filename:' + fileName)
@@ -348,8 +340,20 @@ def search():
         user_input = request.args
         path = user_input.get("file")
         p = user_input.get("para")
-        up_boundary = float(user_input.get("ub"))
-        lower_boundary = float(user_input.get("lb"))
+        low = user_input.get("lb")
+        ub = user_input.get("ub")
+        print(low)
+        print(ub)
+        up_boundary = 0
+        lower_boundary = 0
+        if ub == 'null':
+            low = float(user_input.get("lb"))
+            print(low)
+        else:
+            up_boundary = float(user_input.get("ub"))
+            print(up_boundary)
+            lower_boundary = float(user_input.get("lb"))
+        res = []
         path = path.strip()
         directories = path.split('/')
         cursor.execute("SELECT child_id FROM structure WHERE parent_id is NULL")
@@ -363,7 +367,8 @@ def search():
             child_id = cursor.fetchone()
             if child_id is None:
                 print("readPartition: cannot access '{}': No such file or directory".format(path))
-                return
+                comb = {"command": "Failed: file not exists.", "result": res}
+                return jsonify(comb=comb)
             else:
                 child_id = child_id[0]
             parent_id = child_id
@@ -380,16 +385,23 @@ def search():
         match = dict()
         for i in range(len(columns)):
             match[columns[i]] = i
-        res = []
         columns_id = match[p]
-        for i in range(len(data)):
-            if i != 0:
-                row_data = data[i].split(',')
-                temp_ans = float(row_data[columns_id])
-                if lower_boundary <= temp_ans <= up_boundary:
-                    res.append(row_data)
-        json_data = json.dumps(res, ensure_ascii=False)
-        return json_data
+        if ub != 'null':
+            for i in range(len(data)):
+                if i != 0:
+                    row_data = data[i].split(',')
+                    temp_ans = float(row_data[columns_id])
+                    if lower_boundary <= temp_ans <= up_boundary:
+                        res.append(row_data)
+        else:
+            for i in range(len(data)):
+                if i != 0:
+                    row_data = data[i].split(',')
+                    temp_ans = float(row_data[columns_id])
+                    if temp_ans == low:
+                        res.append(row_data)
+        comb = {"command": "Records found:", "result": res}
+        return jsonify(comb=comb)
     return application.send_static_file("application.html")
 
 
@@ -402,7 +414,11 @@ def analytics():
         mode = user_input.get("type")
         res = map_partition(file, p)
         ans = reduce_partition(res, mode)
-        return ans
+        comb = {
+            "command": "Analytics: In the file [" + file + "], we want to get [" + p + "] of [" + mode + "]",
+            "result": ans
+        }
+        return jsonify(comb=comb)
     return application.send_static_file("application.html")
 
 
@@ -449,19 +465,19 @@ def map_partition(path, p):
 def reduce_partition(res, mode):
     if mode == 'mode':
         counts = np.bincount(res)
-        return json.dumps(str(np.argmax(counts)))
+        return str(np.argmax(counts))
     if mode == 'median':
-        return json.dumps(str(np.median(res)))
+        return str(np.median(res))
     if mode == 'mean':
-        return json.dumps(str(np.mean(res)))
+        return str(np.mean(res))
     if mode == 'max':
-        return json.dumps(str(np.max(res)))
+        return str(np.max(res))
     if mode == 'min':
-        return json.dumps(str(np.min(res)))
-    if mode == 'std':
-        return json.dumps(str(np.std(res)))
+        return str(np.min(res))
+    if mode == 'SD':
+        return str(np.std(res))
     if mode == 'var':
-        return json.dumps(str(np.var(res)))
+        return str(np.var(res))
 
 
 if __name__ == '__main__':
