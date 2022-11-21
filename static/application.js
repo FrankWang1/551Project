@@ -28,7 +28,6 @@ async function fetchAndPrint(url, source){
                 let out = "";
                 for (let i = 0; i < result.length; i++) {
                     out += JSON.stringify(result[i]) + "\n";
-                    console.log(JSON.stringify(result[i]))
                 }
                 document.getElementById(source === 0 ? "result" : "resultS").innerHTML = out;
             }
@@ -39,18 +38,17 @@ async function fetchAndPrint(url, source){
             out += "<a href ='#' onclick='navigateDir(\"" + result[i] + "\")'>" + result[i] + "</a>&nbsp&nbsp&nbsp|&nbsp&nbsp&nbsp";
         }
         out += "&nbsp&nbsp&nbsp---&nbsp&nbsp&nbsp<a href ='#' onclick='navigateBack()'>Back</a>";
-        console.log(out)
         document.getElementById("dir_map").innerHTML = out;
     }
 }
 async function navigateDir(path) {
-    base += path;
+    base += base == '/' ? path : '/' + path;
     await fetchAndPrint(lsurl + base, 2);
 }
 
 async function navigateBack() {
     base = base.substring(0, base.lastIndexOf('/'));
-    base += base.length === 0 ? "/" : "";
+    base += base.length == 0 ? '/' : '';
     await fetchAndPrint(lsurl + base, 2);
 }
 
