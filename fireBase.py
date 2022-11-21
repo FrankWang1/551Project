@@ -42,6 +42,13 @@ def ls():
         response = requests.get(url=url)
         data = json.loads(response.text)
         res = []
+        if not type(data) is dict:
+            res.append("ls failed: no such directory.")
+            comb = {
+                "command": "ls " + directory,
+                "result": res
+            }
+            return jsonify(comb=comb)
         for key, _ in data.items():
             res.append(key)
         comb = {
