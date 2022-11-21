@@ -5,7 +5,7 @@ test search for firebase database
 
 # to change DB
 export FLASK_APP= (db_name)
-example: firebase.py mongoDB.py
+example: export FLASK_APP=mongoDB.py
 
 # to change DB if your pc is windows os
 command1: set FLASK_APP = db_name
