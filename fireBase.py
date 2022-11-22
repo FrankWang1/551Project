@@ -219,6 +219,7 @@ def search():
         pos = path.rfind('/')
         fileName = path[pos + 1:-4]
         field = '\"' + field + '\"'
+        total = []
         for i in index:
             array = []
             if ub is None:
@@ -228,6 +229,7 @@ def search():
                 data = json.loads(response.text)
                 for _, value in data.items():
                     array.append(value)
+                    total.append(value)
 
             else:
                 response = requests.get(
@@ -237,7 +239,9 @@ def search():
                 data = json.loads(response.text)
                 for _, value in data.items():
                     array.append(value)
+                    total.append(value)
             res.append({"partition " + str(i): array})
+        res.append({"total" : total})
         comb = {
             "command": "Search: In the file [" + fileName + "]",
             "result": res
