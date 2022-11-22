@@ -220,13 +220,14 @@ def search():
         fileName = path[pos + 1:-4]
         field = '\"' + field + '\"'
         for i in index:
+            array = []
             if ub is None:
                 url = baseURL + str(
                     i) + '/' + fileName + json_suffix + '?orderBy=' + field + '&equalTo=' + str(lb)
                 response = requests.get(url)
                 data = json.loads(response.text)
                 for _, value in data.items():
-                    res.append(value)
+                    array.append(value)
 
             else:
                 response = requests.get(
@@ -235,7 +236,8 @@ def search():
                         lb) + '&endAt=' + str(ub))
                 data = json.loads(response.text)
                 for _, value in data.items():
-                    res.append(value)
+                    array.append(value)
+            res.append({"partition " + str(i): array})
         comb = {
             "command": "Search: In the file [" + fileName + "]",
             "result": res
