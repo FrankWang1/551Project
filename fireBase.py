@@ -241,7 +241,7 @@ def search():
                     array.append(value)
                     total.append(value)
             res.append({"partition " + str(i): array})
-        res.append({"total" : total})
+        res.append({"total": total})
         comb = {
             "command": "Search: In the file [" + fileName + "]",
             "result": res

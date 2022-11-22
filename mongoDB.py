@@ -328,14 +328,20 @@ def analytics():
         aType = user_input.get("type")
         count = getPartitionLocations(file)
         array = []
+        res = []
+        res.append("Map part:")
         for i in range(count):
             # print("partition" + str(i))
             num = analyticsByPartition(file, parameter, aType, i)
             array.append(num)
+            res.append({"Partition " + str(i): num[0]})
         result = reduce(aType, array)
+        res.append("Reduce part:")
+        res.append({"Reduce:": str(result)})
         comb = {
-            "command": "Analytics: In the file [" + file + "], we want to get [" + aType + "] of [" + parameter + "]",
-            "result": result
+            "command": "Analytics: In the file [" + file + "], we want to get [" + aType + "] of [" + parameter + "]. "
+                       + "And We have two parts: Map and Reduce",
+            "result": res
         }
         print(comb)
         return jsonify(comb=comb)
