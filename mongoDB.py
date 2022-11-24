@@ -304,18 +304,24 @@ def search():
     path, field, lb, ub = request.args.get("file"), request.args.get("para"), request.args.get("lb"), request.args.get("ub")
     ub = None if ub == "null" else ub
     file = splitFilename(path)
-    res = []
+    res, result = [], []
     if not file:
         comb = {"command": "Failed: file not exists.", "result": res}
         return jsonify(comb=comb)
+    i = 0
     for loc in file['locs']:
+        pres = []
         for line in data_nodes[''.join(['block', str(loc['block'])])].find_one({'file': loc['file']})['data']:
             val = json.loads(line)[field]
             lb = int(lb) if type(val) == int else (float(lb) if type(val) == float else lb)
             ub = None if not ub else (int(ub) if type(val) == int else (float(ub) if type(val) == float else ub))
             if ub and val >= lb and val <= ub or not ub and val == lb:
                 res.append(line)
-    comb = {"command": "Records found:", "result": res}
+                pres.append(line)
+        result.append({"partition " + str(i): pres})
+        i += 1
+    result.append({"total": res})
+    comb = {"command": "Records found:", "result": result}
     print(comb)
     return jsonify(comb=comb)
 
