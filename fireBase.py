@@ -241,7 +241,7 @@ def search():
                     array.append(value)
                     total.append(value)
             res.append({"partition " + str(i): array})
-        res.append({"total" : total})
+        res.append({"total": total})
         comb = {
             "command": "Search: In the file [" + fileName + "]",
             "result": res
@@ -260,12 +260,14 @@ def analytics():
         type = user_input.get("type")
         index = getPartitionLocations(file)
         res = []
+        total = []
         for i in index:
+            total.append({"partition " + str(i): get_partition_analytics(file, i, parameter, type)})
             res.append(get_partition_analytics(file, i, parameter, type))
-        res = analytics_reduce(parameter, res, type)
+        total.append({"total": analytics_reduce(parameter, res, type)})
         comb = {
             "command": "Analytics: In the file [" + file + "], we want to get [" + type + "] of [" + parameter + "]",
-            "result": res
+            "result": total
         }
         return jsonify(comb=comb)
     return application.send_static_file("application.html")
@@ -335,4 +337,4 @@ def analytics_reduce(parameter, list, type):
 
 
 if __name__ == '__main__':
-    application.run()
+        application.run(host='0.0.0.0')
