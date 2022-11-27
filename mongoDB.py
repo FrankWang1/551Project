@@ -140,8 +140,8 @@ def cat():
         if file:
             for loc in file['locs']:
                 for line in data_nodes[''.join(['block', str(loc['block'])])].find_one({'file': loc['file']})['data']:
-                    print(line)
-                    res.append(line)
+                    print(type(line))
+                    res.append(json.loads(line))
         comb = {
             "command": "Command input: cat" + path,
             "result": res
@@ -316,8 +316,8 @@ def search():
             lb = int(lb) if type(val) == int else (float(lb) if type(val) == float else lb)
             ub = None if not ub else (int(ub) if type(val) == int else (float(ub) if type(val) == float else ub))
             if ub and val >= lb and val <= ub or not ub and val == lb:
-                res.append(line)
-                pres.append(line)
+                res.append(json.loads(line))
+                pres.append(json.loads(line))
         result.append({"partition " + str(i): pres})
         i += 1
     result.append({"total": res})
@@ -340,7 +340,7 @@ def analytics():
             # print("partition" + str(i))
             num = analyticsByPartition(file, parameter, aType, i)
             array.append(num)
-            res.append({"Partition " + str(i): num[0]})
+            res.append({"Partition " + str(i): num})
         result = reduce(aType, array)
         res.append("Reduce part:")
         res.append({"Reduce:": str(result)})
